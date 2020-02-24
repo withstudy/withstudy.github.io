@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>vue源码分析-手写模拟简单源码(1) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),替换到了 页面中 放置模板的位置.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vue源码分析-手写模拟简单源码(1)">
+<meta property="og:url" content="http://yoursite.com/2020/02/24/1-Vue/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),替换到了 页面中 放置模板的位置.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-02-24T03:31:20.000Z">
+<meta property="article:modified_time" content="2020-02-24T03:50:11.040Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="vue">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-1-Vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/1-Vue/" class="article-date">
+  <time datetime="2020-02-24T03:31:20.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/vue/">vue</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      vue源码分析-手写模拟简单源码(1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="使用步骤"><a href="#使用步骤" class="headerlink" title="使用步骤:"></a>使用步骤:</h3><ol>
+<li>编写 页面 模板 <ol>
+<li>直接在 HTML 标签中写 标签</li>
+<li>使用 template</li>
+<li>使用 单文件 ( <template /> )</li>
+</ol>
+</li>
+<li>创建 Vue 的实例<ul>
+<li>在 Vue 的构造函数中提供: data, methods, computed, watcher, props, …</li>
+</ul>
+</li>
+<li>将 Vue 挂载到 页面中 ( mount )</li>
+</ol>
+<p>`<!-- 写模板 --><br>  <div id="root"><br>    <p></p><br>    <p></p><br>  </div></p>
+  <script>
+    // 第二步 创建 实例
+    let app = new Vue( {
+      el: '#root',
+      data: {
+        name: '张三'
+        , message: '是一个男人'
+      }
+    } );
+
+    // 第三步是挂载: 这种用法的挂载在 vue.js 中帮我们实现了`
+
+### Vue 的执行流程
+
+1. 获得模板: 模板中有 "坑"
+2. 利用 Vue 构造函数中所提供的数据来 "填坑", 得到可以在页面中显示的 "标签了"
+3. 将标签替换页面中原来有坑的标签
+
+Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),
+替换到了 页面中 放置模板的位置.
+
+### 简单的模板渲染
+
+步骤:
+
+1. 拿到模板
+2. 拿到数据 ( data )
+3. 将数据与模板结合, 得到 的是 HTML 元素 ( DOM 元素 )
+
+`function compiler( template, data ) {
+      let childNodes = template.childNodes; // 取出子元素
+      for ( let i = 0; i < childNodes.length; i++ ) {
+        let type = childNodes[ i ].nodeType; // 1 元素, 3 文本节点
+        if ( type === 3 ) {
+          // 文本节点, 可以判断里面是否有 需要 插值
+          let txt = childNodes[ i ].nodeValue; // 该属性只有文本节点才有意义
+          // 有没有双花括号??? 
+          txt = txt.replace( rkuohao, function ( _, g ) { // replace 使用正则匹配一次 函数就会被调用一次
+                                                    // 函数的 第 0 个参数 表示匹配到的内容
+                                                    // 函数的 第 n 个参数 表示正则中的 第 n 组
+            let key = g.trim(); // 写在双花括号里面的 东西
+            let value = data[ key ];
+            // 将  用这个 值替换
+            return value;
+          } );
+          // 注意:  txt 现在和 DOM 元素是没有关系
+          childNodes[ i ].nodeValue = txt;
+        } 
+        else if ( type === 1 ) {
+          // 元素, 考虑它有没有子元素, 是否需要将其子元素进行 判断是否要插值
+          compiler( childNodes[ i ], data );
+        }
+      }
+    }`
+
+4. 放到页面中
+
+` root.parentNode.replaceChild( generateNode, root );`
+
+来源: 腾讯课堂蒋坤公开课
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/24/1-Vue/" data-id="ck6zwznku00054su5ad04hcx1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/24/2-Vue/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          vue源码分析-手写模拟简单源码(2)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/23/Hexo/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">hexo+github搭建静态博客</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/vue/">vue</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/">默认分类</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/vue/" style="font-size: 20px;">vue</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/24/3-Vue/">vue源码分析-手写模拟简单源码(3)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/2-Vue/">vue源码分析-手写模拟简单源码(2)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/1-Vue/">vue源码分析-手写模拟简单源码(1)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/23/Hexo/">hexo+github搭建静态博客</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

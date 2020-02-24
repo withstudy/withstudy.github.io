@@ -5,14 +5,19 @@
   
 
   
-  <title>Tag: hexo | Hexo</title>
+  <title>vue源码分析-手写模拟简单源码(2) | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/tags/hexo/index.html">
+  <meta name="description" content="Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),替换到了 页面中 放置模板的位置.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vue源码分析-手写模拟简单源码(2)">
+<meta property="og:url" content="http://yoursite.com/2020/02/24/2-Vue/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),替换到了 页面中 放置模板的位置.">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-02-24T04:31:20.000Z">
+<meta property="article:modified_time" content="2020-02-24T03:48:47.252Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="vue">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -62,40 +67,92 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/02/23/Hexo/" class="archive-article-date">
-  <time datetime="2020-02-23T04:31:20.000Z" itemprop="datePublished">Feb 23</time>
+        <section id="main"><article id="post-2-Vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/2-Vue/" class="article-date">
+  <time datetime="2020-02-24T04:31:20.000Z" itemprop="datePublished">2020-02-24</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/vue/">vue</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/02/23/Hexo/">hexo+github搭建静态博客</a>
+    <h1 class="article-title" itemprop="name">
+      vue源码分析-手写模拟简单源码(2)
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>要解决一个问题: 使用 ‘xxx.yyy.zzz’ 可以来访问某一个对象，就是用字符串路径来访问对象的成员。</p>
+<p><code>function getValueByPath( obj, path ) {
+      let paths = path.split( &#39;.&#39; ); // [ xxx, yyy, zzz ]
+      let res = obj;
+      let prop;
+      while( prop = paths.shift() ) {
+        res = res[ prop ];
+      }
+      return res;
+    }</code></p>
+<p>将上一篇的方法改进一下:</p>
+<p><code>function compiler( template, data ) {
+      let childNodes = template.childNodes; // 取出子元素
+      for ( let i = 0; i &lt; childNodes.length; i++ ) {
+        let type = childNodes[ i ].nodeType; // 1 元素, 3 文本节点
+        if ( type === 3 ) {
+          // 文本节点, 可以判断里面是否有 需要 插值
+          let txt = childNodes[ i ].nodeValue; // 该属性只有文本节点才有意义
+          // 有没有双花括号??? 
+          txt = txt.replace( rkuohao, function ( _, g ) { // replace 使用正则匹配一次 函数就会被调用一次// 函数的 第 0 个参数 表示匹配到的内容// 函数的 第 n 个参数 表示正则中的 第 n 组
+          let path = g.trim(); // 写在双花括号里面的 东西
+           let value = getValueByPath( data, path );
+            // 将  用这个 值替换
+            return value;
+          } );</code></p>
+<p>来源: 腾讯课堂蒋坤公开课</p>
 
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/24/2-Vue/" data-id="ck6zwyua900004su56toodqn0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/24/3-Vue/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          vue源码分析-手写模拟简单源码(3)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/24/1-Vue/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">vue源码分析-手写模拟简单源码(1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
 
 </section>
         

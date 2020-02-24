@@ -64,6 +64,301 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-3-Vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/3-Vue/" class="article-date">
+  <time datetime="2020-02-24T04:36:18.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/vue/">vue</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/3-Vue/">vue源码分析-手写模拟简单源码(3)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="函数科里化"><a href="#函数科里化" class="headerlink" title="函数科里化"></a>函数科里化</h3><p>概念:</p>
+<ol>
+<li>科里化: 一个函数原本有多个参数, 之传入<strong>一个</strong>参数, 生成一个新函数, 由新函数接收剩下的参数来运行得到结构.</li>
+<li>偏函数: 一个函数原本有多个参数, 之传入<strong>一部分</strong>参数, 生成一个新函数, 由新函数接收剩下的参数来运行得到结构.</li>
+<li>高阶函数: 一个函数<strong>参数是一个函数</strong>, 该函数对参数这个函数进行加工, 得到一个函数, 这个加工用的函数就是高阶函数.</li>
+</ol>
+<p>为什么要使用科里化? 为了提升性能. 使用科里化可以缓存一部分能力.</p>
+<p>使用两个案例来说明:</p>
+<ol>
+<li><p>判断元素</p>
+</li>
+<li><p>虚拟 DOM 的 render 方法</p>
+</li>
+<li><p>判断元素:</p>
+</li>
+</ol>
+<p>Vue 本质上是使用 HTML 的字符串作为模板的, 将字符串的 模板 转换为 AST, 再转换为 VNode.</p>
+<ul>
+<li>模板 -&gt; AST</li>
+<li>AST -&gt; VNode</li>
+<li>VNode -&gt; DOM</li>
+</ul>
+<p>最消耗性能是字符串解析 ( 模板 -&gt; AST )</p>
+<p>在 Vue 中每一个标签可以是真正的 HTML 标签, 也可以是自定义组件, 问怎么区分???</p>
+<p>在 Vue 源码中其实将所有可以用的 HTML 标签已经存起来了.</p>
+<p>假设这里是考虑几个标签:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> tags = <span class="string">'div,p,a,img,ul,li'</span>.split(<span class="string">','</span>);</span><br></pre></td></tr></table></figure>
+
+<p>需要一个函数, 判断一个标签名是否为 内置的 标签</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isHTMLTag</span>(<span class="params"> tagName </span>) </span>&#123;</span><br><span class="line">  tagName = tagName.toLowerCase();</span><br><span class="line">  <span class="keyword">if</span> ( tags.indexOf( tagName ) &gt; <span class="number">-1</span> ) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>虚拟 DOM 的 render 方法</li>
+</ol>
+<p>思考: vue 项目 <em>模板 转换为 抽象语法树</em> 需要执行几次??? </p>
+<ul>
+<li>页面一开始加载需要渲染</li>
+<li>每一个属性 ( 响应式 ) 数据在发生变化的时候 要渲染</li>
+<li>watch, computed 等等</li>
+</ul>
+<p>以前写的代码 每次需要渲染的时候, 模板就会被解析一次 ( 注意, 这里我们简化了解析方法 )</p>
+<p>render 的作用是将 虚拟 DOM 转换为 真正的 DOM 加到页面中</p>
+<ul>
+<li>虚拟 DOM 可以降级理解为 AST</li>
+<li>一个项目运行的时候 模板是不会变 的, 就表示 AST 是不会变的</li>
+</ul>
+<p>我们可以将代码进行优化, 将 虚拟 DOM 缓存起来, 生成一个函数, 函数只需要传入数据 就可以得到 真正的 DOM</p>
+<p><code>JGVue.prototype.createRenderFn = function () {
+      let ast = getVNode( this._template );
+      // Vue: 将 AST + data =&gt; VNode
+      // 我们: 带有坑的 VNode + data =&gt; 含有数据的 VNode
+      return function render () {//返回一个方法
+        // 将 带有 坑的 VNode 转换为 待数据的 VNode
+        let _tmp = combine( ast, this._data );
+        debugger;
+        return _tmp;
+      }
+    }</code></p>
+<p>在真正的 Vue 中使用了 二次提交的 设计结构</p>
+<ol>
+<li>在 页面中 的 DOM 和 虚拟 DOM 是一一对应的关系</li>
+<li>先 有 AST 和 数据 生成 VNode ( 新, render )</li>
+<li>将 就的 VNode 和 新的 VNode 比较 ( diff ), 更新 ( update )</li>
+</ol>
+<p>参考资料:</p>
+<ul>
+<li><a href="https://llh911001.gitbooks.io/mostly-adequate-guide-chinese/content/" target="_blank" rel="noopener">函数式编程</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9F%AF%E9%87%8C%E5%8C%96" target="_blank" rel="noopener">维基百科</a></li>
+</ul>
+<p>来源: 腾讯课堂蒋坤公开课</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/24/3-Vue/" data-id="ck6zx03lo00084su58n286pv0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-2-Vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/2-Vue/" class="article-date">
+  <time datetime="2020-02-24T04:31:20.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/vue/">vue</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/2-Vue/">vue源码分析-手写模拟简单源码(2)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>要解决一个问题: 使用 ‘xxx.yyy.zzz’ 可以来访问某一个对象，就是用字符串路径来访问对象的成员。</p>
+<p><code>function getValueByPath( obj, path ) {
+      let paths = path.split( &#39;.&#39; ); // [ xxx, yyy, zzz ]
+      let res = obj;
+      let prop;
+      while( prop = paths.shift() ) {
+        res = res[ prop ];
+      }
+      return res;
+    }</code></p>
+<p>将上一篇的方法改进一下:</p>
+<p><code>function compiler( template, data ) {
+      let childNodes = template.childNodes; // 取出子元素
+      for ( let i = 0; i &lt; childNodes.length; i++ ) {
+        let type = childNodes[ i ].nodeType; // 1 元素, 3 文本节点
+        if ( type === 3 ) {
+          // 文本节点, 可以判断里面是否有 需要 插值
+          let txt = childNodes[ i ].nodeValue; // 该属性只有文本节点才有意义
+          // 有没有双花括号??? 
+          txt = txt.replace( rkuohao, function ( _, g ) { // replace 使用正则匹配一次 函数就会被调用一次// 函数的 第 0 个参数 表示匹配到的内容// 函数的 第 n 个参数 表示正则中的 第 n 组
+          let path = g.trim(); // 写在双花括号里面的 东西
+           let value = getValueByPath( data, path );
+            // 将  用这个 值替换
+            return value;
+          } );</code></p>
+<p>来源: 腾讯课堂蒋坤公开课</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/24/2-Vue/" data-id="ck6zwyua900004su56toodqn0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-1-Vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/1-Vue/" class="article-date">
+  <time datetime="2020-02-24T03:31:20.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/vue/">vue</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/1-Vue/">vue源码分析-手写模拟简单源码(1)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="使用步骤"><a href="#使用步骤" class="headerlink" title="使用步骤:"></a>使用步骤:</h3><ol>
+<li>编写 页面 模板 <ol>
+<li>直接在 HTML 标签中写 标签</li>
+<li>使用 template</li>
+<li>使用 单文件 ( <template /> )</li>
+</ol>
+</li>
+<li>创建 Vue 的实例<ul>
+<li>在 Vue 的构造函数中提供: data, methods, computed, watcher, props, …</li>
+</ul>
+</li>
+<li>将 Vue 挂载到 页面中 ( mount )</li>
+</ol>
+<p>`<!-- 写模板 --><br>  <div id="root"><br>    <p></p><br>    <p></p><br>  </div></p>
+  <script>
+    // 第二步 创建 实例
+    let app = new Vue( {
+      el: '#root',
+      data: {
+        name: '张三'
+        , message: '是一个男人'
+      }
+    } );
+
+    // 第三步是挂载: 这种用法的挂载在 vue.js 中帮我们实现了`
+
+### Vue 的执行流程
+
+1. 获得模板: 模板中有 "坑"
+2. 利用 Vue 构造函数中所提供的数据来 "填坑", 得到可以在页面中显示的 "标签了"
+3. 将标签替换页面中原来有坑的标签
+
+Vue 利用 我们提供的数据 和 页面中 模板 生成了 一个新的 HTML 标签 ( node 元素 ),
+替换到了 页面中 放置模板的位置.
+
+### 简单的模板渲染
+
+步骤:
+
+1. 拿到模板
+2. 拿到数据 ( data )
+3. 将数据与模板结合, 得到 的是 HTML 元素 ( DOM 元素 )
+
+`function compiler( template, data ) {
+      let childNodes = template.childNodes; // 取出子元素
+      for ( let i = 0; i < childNodes.length; i++ ) {
+        let type = childNodes[ i ].nodeType; // 1 元素, 3 文本节点
+        if ( type === 3 ) {
+          // 文本节点, 可以判断里面是否有 需要 插值
+          let txt = childNodes[ i ].nodeValue; // 该属性只有文本节点才有意义
+          // 有没有双花括号??? 
+          txt = txt.replace( rkuohao, function ( _, g ) { // replace 使用正则匹配一次 函数就会被调用一次
+                                                    // 函数的 第 0 个参数 表示匹配到的内容
+                                                    // 函数的 第 n 个参数 表示正则中的 第 n 组
+            let key = g.trim(); // 写在双花括号里面的 东西
+            let value = data[ key ];
+            // 将  用这个 值替换
+            return value;
+          } );
+          // 注意:  txt 现在和 DOM 元素是没有关系
+          childNodes[ i ].nodeValue = txt;
+        } 
+        else if ( type === 1 ) {
+          // 元素, 考虑它有没有子元素, 是否需要将其子元素进行 判断是否要插值
+          compiler( childNodes[ i ], data );
+        }
+      }
+    }`
+
+4. 放到页面中
+
+` root.parentNode.replaceChild( generateNode, root );`
+
+来源: 腾讯课堂蒋坤公开课
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/24/1-Vue/" data-id="ck6zwznku00054su5ad04hcx1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Hexo" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/02/23/Hexo/" class="article-date">
@@ -156,7 +451,7 @@ hexo d -g #生成并上传</code></p>
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/">默认分类</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/vue/">vue</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/">默认分类</a></li></ul>
     </div>
   </div>
 
@@ -166,7 +461,7 @@ hexo d -g #生成并上传</code></p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/" rel="tag">vue</a></li></ul>
     </div>
   </div>
 
@@ -176,7 +471,7 @@ hexo d -g #生成并上传</code></p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+      <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/vue/" style="font-size: 20px;">vue</a>
     </div>
   </div>
 
@@ -196,6 +491,18 @@ hexo d -g #生成并上传</code></p>
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/02/24/3-Vue/">vue源码分析-手写模拟简单源码(3)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/2-Vue/">vue源码分析-手写模拟简单源码(2)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/1-Vue/">vue源码分析-手写模拟简单源码(1)</a>
+          </li>
         
           <li>
             <a href="/2020/02/23/Hexo/">hexo+github搭建静态博客</a>
