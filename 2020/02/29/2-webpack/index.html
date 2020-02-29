@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>webpack-开发环境配置 2 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="webpack是一个现代JavasScript应用程序的模块打包器(module bunder)官方网站https:&#x2F;&#x2F;www.webpackjs.com&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpack-开发环境配置 2">
+<meta property="og:url" content="http://yoursite.com/2020/02/29/2-webpack/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="webpack是一个现代JavasScript应用程序的模块打包器(module bunder)官方网站https:&#x2F;&#x2F;www.webpackjs.com&#x2F;">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-02-29T06:44:20.000Z">
+<meta property="article:modified_time" content="2020-02-29T06:47:55.903Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="webpack">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-2-webpack" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/29/2-webpack/" class="article-date">
+  <time datetime="2020-02-29T06:44:20.000Z" itemprop="datePublished">2020-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/webpack/">webpack</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      webpack-开发环境配置 2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="提取css成单独文件"><a href="#提取css成单独文件" class="headerlink" title="提取css成单独文件"></a>提取css成单独文件</h2><p>一般webpack打包，会把css打包到js文件中，如果在生产环境时，需要把css文件提取成单独的一个文件，减小打包结果的js文件的体积<br>提取css成单独文件需要使用插件<code>mini-css-extract-plugin</code>,我们需要通过npm下载，然后导入</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MiniCssExtractPlugin = <span class="built_in">require</span>(<span class="string">'mini-css-extract-plugin'</span>);</span><br></pre></td></tr></table></figure>
+<p>在插件<code>plugins</code>中配置</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">plugins: [</span><br><span class="line">   <span class="keyword">new</span> MiniCssExtractPlugin(&#123;</span><br><span class="line">     <span class="comment">// 对输出的css文件进行重命名</span></span><br><span class="line">     filename: <span class="string">'css/built.css'</span></span><br><span class="line">   &#125;)</span><br><span class="line"> ]</span><br></pre></td></tr></table></figure>
+<p>然后将处理css的’style-loader’替换，’style-loader’会在html添加style标签</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.css$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          <span class="comment">// 这个loader取代style-loader。作用：提取js中的css成单独文件</span></span><br><span class="line">          MiniCssExtractPlugin.loader,</span><br><span class="line">          <span class="comment">// 将css文件整合到js文件中</span></span><br><span class="line">          <span class="string">'css-loader'</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="css兼容性处理"><a href="#css兼容性处理" class="headerlink" title="css兼容性处理"></a>css兼容性处理</h2><p>css兼容性处理：postcss –&gt; postcss-loader postcss-preset-env<br>需要通过npm下载<code>postcss-loader</code>、<code>postcss-preset-env</code></p>
+<p>还需要在文件夹得package.json中配置<code>browserslist</code>,而<code>postcss-preset-env</code>帮postcss找到package.json中browserslist里面的配置，通过配置加载指定的css兼容性样式</p>
+<p>package.json</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">browserslist<span class="string">": &#123;</span></span><br><span class="line"><span class="string">             // 开发环境 --&gt; 设置node环境变量：process.env.NODE_ENV = development</span></span><br><span class="line"><span class="string">             "</span>development<span class="string">": [</span></span><br><span class="line"><span class="string">               "</span>last <span class="number">1</span> chrome version<span class="string">",//兼容chrome 最近得版本</span></span><br><span class="line"><span class="string">               "</span>last <span class="number">1</span> firefox version<span class="string">",</span></span><br><span class="line"><span class="string">               "</span>last <span class="number">1</span> safari version<span class="string">"</span></span><br><span class="line"><span class="string">             ],</span></span><br><span class="line"><span class="string">             // 生产环境：默认就是看生产环境</span></span><br><span class="line"><span class="string">             "</span>production<span class="string">": [</span></span><br><span class="line"><span class="string">               "</span>&gt;<span class="number">0.2</span>%<span class="string">",</span></span><br><span class="line"><span class="string">              "</span>not dead<span class="string">",//已经死掉得版本</span></span><br><span class="line"><span class="string">               "</span>not op_mini all<span class="string">"//不要op_mini的浏览器</span></span><br><span class="line"><span class="string">             ]</span></span><br><span class="line"><span class="string">           &#125;</span></span><br></pre></td></tr></table></figure>
+<p>在开发环境的时候，需要设置node环境变量:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">process.env.NODE_ENV = development</span><br></pre></td></tr></table></figure>
+<p>使用<code>postcss-loader</code>的默认配置</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.css$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">	<span class="comment">//提取css成单独文件</span></span><br><span class="line">          MiniCssExtractPlugin.loader,</span><br><span class="line">          <span class="string">'css-loader'</span>,</span><br><span class="line">          <span class="comment">// 使用loader的默认配置</span></span><br><span class="line">           <span class="string">'postcss-loader'</span>,</span><br><span class="line"></span><br><span class="line">          &#125; ] &#125;] &#125;</span><br></pre></td></tr></table></figure>
+<p>修改<code>postcss-loader</code>的配置</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.css$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          MiniCssExtractPlugin.loader,</span><br><span class="line">          <span class="string">'css-loader'</span>,</span><br><span class="line">          <span class="comment">// 修改loader的配置</span></span><br><span class="line">          &#123;</span><br><span class="line">            loader: <span class="string">'postcss-loader'</span>,</span><br><span class="line">            options: &#123;</span><br><span class="line">              ident: <span class="string">'postcss'</span>,</span><br><span class="line">              plugins: <span class="function"><span class="params">()</span> =&gt;</span> [</span><br><span class="line">                <span class="comment">// postcss的插件</span></span><br><span class="line">                <span class="built_in">require</span>(<span class="string">'postcss-preset-env'</span>)()</span><br><span class="line">              ] &#125; </span><br><span class="line">         &#125;]&#125; ]&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="压缩css文件"><a href="#压缩css文件" class="headerlink" title="压缩css文件"></a>压缩css文件</h2><p>压缩只需要npm下载插件<code>optimize-css-assets-webpack-plugin</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> OptimizeCssAssetsWebpackPlugin = <span class="built_in">require</span>(<span class="string">'optimize-css-assets-webpack-plugin'</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">plugins: [</span><br><span class="line">   <span class="comment">// 压缩css</span></span><br><span class="line">   <span class="keyword">new</span> OptimizeCssAssetsWebpackPlugin()</span><br><span class="line"> ]</span><br></pre></td></tr></table></figure>
+
+<h2 id="js语法检查"><a href="#js语法检查" class="headerlink" title="js语法检查"></a>js语法检查</h2><p>js语法检查需要npm下载： eslint-loader  eslint<br> 注意：只检查自己写的源代码，第三方的库是不用检查的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">package.json中eslintConfig中设置~</span><br><span class="line">	<span class="string">"eslintConfig"</span>: &#123;</span><br><span class="line">               <span class="string">"extends"</span>: <span class="string">"airbnb-base"</span></span><br><span class="line">             &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">webpack.config.js的loader配置</span><br><span class="line"><span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.js$/</span>,</span><br><span class="line">        exclude: <span class="regexp">/node_modules/</span>,<span class="comment">//第三方的库是不用检查的</span></span><br><span class="line">        loader: <span class="string">'eslint-loader'</span>,</span><br><span class="line">        options: &#123;</span><br><span class="line">          <span class="comment">// 自动修复eslint的错误</span></span><br><span class="line">          fix: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;]&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="js兼容性处理"><a href="#js兼容性处理" class="headerlink" title="js兼容性处理"></a>js兼容性处理</h2><p>  js兼容性处理：babel-loader @babel/core </p>
+<ol>
+<li><p>基本js兼容性处理 –&gt; @babel/preset-env</p>
+<pre><code>问题：只能转换基本语法，如promise高级语法不能转换</code></pre></li>
+<li><p>全部js兼容性处理 –&gt; @babel/polyfill  //直接在js中引入<code>import &quot;@babel/polyfill &quot;</code></p>
+<pre><code>问题：我只要解决部分兼容性问题，但是将所有兼容性代码全部引入，体积太大了~</code></pre></li>
+<li><p>需要做兼容性处理的就做：按需加载  –&gt; core-js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm i babel-loader @babel/preset-env @babel/core -D</span><br><span class="line">npm i core-js -D</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">webpack.config.js的loader配置</span><br><span class="line"> <span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.js$/</span>,</span><br><span class="line">        exclude: <span class="regexp">/node_modules/</span>,<span class="comment">//只需要兼容我们自己写的js</span></span><br><span class="line">        loader: <span class="string">'babel-loader'</span>,</span><br><span class="line">        options: &#123;</span><br><span class="line">          <span class="comment">// 预设：指示babel做怎么样的兼容性处理</span></span><br><span class="line">          presets: [</span><br><span class="line">            [</span><br><span class="line">              <span class="string">'@babel/preset-env'</span>,</span><br><span class="line">              &#123;</span><br><span class="line">                <span class="comment">// 按需加载</span></span><br><span class="line">                useBuiltIns: <span class="string">'usage'</span>,</span><br><span class="line">                <span class="comment">// 指定core-js版本</span></span><br><span class="line">                corejs: &#123;</span><br><span class="line">                  version: <span class="number">3</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="comment">// 指定兼容性做到哪个版本浏览器</span></span><br><span class="line">                targets: &#123;</span><br><span class="line">                  chrome: <span class="string">'60'</span>,</span><br><span class="line">                  firefox: <span class="string">'60'</span>,</span><br><span class="line">                  ie: <span class="string">'9'</span>,</span><br><span class="line">                  safari: <span class="string">'10'</span>,</span><br><span class="line">                  edge: <span class="string">'17'</span></span><br><span class="line">                &#125;</span><br><span class="line">              &#125;]]&#125; &#125;]&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="js压缩"><a href="#js压缩" class="headerlink" title="js压缩"></a>js压缩</h2><p>// 生产环境下会自动压缩js代码<br><code>mode: &#39;production&#39;</code></p>
+</li>
+</ol>
+<h2 id="html压缩"><a href="#html压缩" class="headerlink" title="html压缩"></a>html压缩</h2><p>heml压缩需要使用插件<code>html-webpack-plugin</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//导入插件</span></span><br><span class="line"><span class="keyword">const</span> HtmlWebpackPlugin = <span class="built_in">require</span>(<span class="string">'html-webpack-plugin'</span>);</span><br><span class="line"><span class="comment">//配置插件</span></span><br><span class="line">plugins: [</span><br><span class="line">    <span class="keyword">new</span> HtmlWebpackPlugin(&#123;</span><br><span class="line">      template: <span class="string">'./src/index.html'</span>,</span><br><span class="line">      <span class="comment">// 压缩html代码</span></span><br><span class="line">      minify: &#123;</span><br><span class="line">        <span class="comment">// 移除空格</span></span><br><span class="line">        collapseWhitespace: <span class="literal">true</span>,</span><br><span class="line">        <span class="comment">// 移除注释</span></span><br><span class="line">        removeComments: <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)]</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/29/2-webpack/" data-id="ck778renh0000ssu5dpge6pe1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/02/28/1-webpack/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">webpack-开发环境配置</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/vue/">vue</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/webpack/">webpack</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/">默认分类</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/github/" rel="tag">github</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/" rel="tag">vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a> <a href="/tags/vue/" style="font-size: 20px;">vue</a> <a href="/tags/webpack/" style="font-size: 15px;">webpack</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/29/2-webpack/">webpack-开发环境配置 2</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/28/1-webpack/">webpack-开发环境配置</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/4-Vue/">vue源码分析-手写模拟简单源码(4)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/3-Vue/">vue源码分析-手写模拟简单源码(3)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/24/2-Vue/">vue源码分析-手写模拟简单源码(2)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
